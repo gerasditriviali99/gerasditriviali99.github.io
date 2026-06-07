@@ -11,8 +11,8 @@
     <div class="max-w-5xl mx-auto space-y-6">
         
         <div class="bg-emerald-600 rounded-xl shadow-lg p-6 text-white text-center">
-            <h1 class="text-3xl font-bold tracking-wide">Rekap Pembelian BBM SAPA</h1>
-            <p class="text-emerald-100 mt-2">Data dan Foto Struk tersimpan otomatis di Google Cloud</p>
+            <h1 class="text-3xl font-bold tracking-wide">Rekap Pembelian BBM SAPA (Online)</h1>
+            <p class="text-emerald-100 mt-2">Data tersimpan otomatis dan terpusat di Google Sheets</p>
         </div>
 
         <div class="bg-white rounded-xl shadow p-6">
@@ -51,11 +51,6 @@
                     <input type="number" id="harga" placeholder="Misal: 150000" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
 
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Upload Foto Struk (Opsional)</label>
-                    <input type="file" id="fotoStruk" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-                </div>
-
                 <div class="md:col-span-2 mt-2">
                     <button type="submit" id="btnSimpan" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 disabled:bg-gray-400">
                         Simpan Data ke Cloud
@@ -79,17 +74,16 @@
                             <th class="p-3 border-b">Jenis BBM</th>
                             <th class="p-3 border-b">Liter</th>
                             <th class="p-3 border-b">Total Harga</th>
-                            <th class="p-3 border-b">Struk</th>
                         </tr>
                     </thead>
                     <tbody id="tabelBody" class="text-sm text-gray-700">
-                        <tr><td colspan="6" class="text-center p-4 text-gray-500">Sedang memuat data dari Google Sheets...</td></tr>
+                        <tr><td colspan="5" class="text-center p-4 text-gray-500">Sedang memuat data dari Google Sheets...</td></tr>
                     </tbody>
                     <tfoot>
                         <tr class="bg-emerald-50 font-semibold text-gray-800">
                             <td colspan="3" class="p-3 border-t text-right">Total Keseluruhan:</td>
                             <td id="totalLiter" class="p-3 border-t">0 L</td>
-                            <td id="totalBiaya" class="p-3 border-t" colspan="2">Rp 0</td>
+                            <td id="totalBiaya" class="p-3 border-t">Rp 0</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -99,7 +93,7 @@
     </div>
 
     <script>
-        // GANTI DENGAN URL WEB APP YANG ANDA DAPATKAN DARI GOOGLE APPS SCRIPT YANG BARU
+        // GANTI DENGAN URL WEB APP YANG ANDA DAPATKAN DARI GOOGLE APPS SCRIPT
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxIt68AXe6tY6jro2qtUNtj9_5doJUfr6rvltzZfZQDBg3h8rVU3eZ5-onekT7nWDBDew/exec";
 
         const formatRupiah = (angka) => {
@@ -109,24 +103,14 @@
         const formatDate = (dateString) => {
             if(!dateString) return "-";
             const date = new Date(dateString);
-            if(isNaN(date.getTime())) return dateString; 
+            if(isNaN(date.getTime())) return dateString; // Jika format bawaan string biasa
             return date.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
         };
-
-        // Fungsi untuk mengubah file gambar menjadi kode teks (Base64) agar bisa dikirim ke Google Apps Script
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
 
         // Muat Data (GET) dari Google Sheets
         async function muatDataDariSheets() {
             const tbody = document.getElementById('tabelBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">Menghubungkan ke cloud...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-gray-500">Menghubungkan ke cloud...</td></tr>';
 
             try {
                 const response = await fetch(WEB_APP_URL);
@@ -137,17 +121,11 @@
                 let totalBiaya = 0;
 
                 if (dataBBM.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">Belum ada data di Google Sheets.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-gray-500">Belum ada data di Google Sheets.</td></tr>';
                 } else {
                     dataBBM.forEach((item) => {
                         totalLiter += parseFloat(item.liter || 0);
                         totalBiaya += parseFloat(item.harga || 0);
-
-                        // Cek apakah ada link foto struk
-                        let linkStruk = "-";
-                        if (item.foto_struk && item.foto_struk.startsWith('http')) {
-                            linkStruk = `<a href="${item.foto_struk}" target="_blank" class="text-blue-500 hover:underline">Lihat</a>`;
-                        }
 
                         tbody.innerHTML += `
                             <tr class="hover:bg-gray-50 transition border-b">
@@ -156,7 +134,6 @@
                                 <td class="p-3">${item.jenisBBM}</td>
                                 <td class="p-3">${parseFloat(item.liter).toFixed(2)} L</td>
                                 <td class="p-3">${formatRupiah(item.harga)}</td>
-                                <td class="p-3 font-medium">${linkStruk}</td>
                             </tr>
                         `;
                     });
@@ -167,7 +144,7 @@
 
             } catch (error) {
                 console.error(error);
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-red-500">Gagal mengambil data. Pastikan URL Web App benar.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-red-500">Gagal mengambil data. Pastikan URL Web App benar.</td></tr>';
             }
         }
 
@@ -177,30 +154,18 @@
             
             const btnSimpan = document.getElementById('btnSimpan');
             btnSimpan.disabled = true;
-            btnSimpan.innerText = "Mengupload Data & Foto...";
-
-            let fotoBase64 = "";
-            let namaFile = "";
-            const fileInput = document.getElementById('fotoStruk').files[0];
-            
-            // Jika ada foto yang diupload, proses fotonya
-            if (fileInput) {
-                fotoBase64 = await getBase64(fileInput);
-                const nopol = document.getElementById('nopol').value.replace(/\s+/g, '_');
-                namaFile = `STRUK_${nopol}_${Date.now()}.${fileInput.name.split('.').pop()}`;
-            }
+            btnSimpan.innerText = "Menyimpan ke Cloud...";
 
             const newData = {
                 tanggal: document.getElementById('tanggal').value,
                 nopol: document.getElementById('nopol').value,
                 jenisBBM: document.getElementById('jenisBBM').value,
                 liter: document.getElementById('liter').value,
-                harga: document.getElementById('harga').value,
-                fotoBase64: fotoBase64, // Kirim kode gambar
-                namaFile: namaFile      // Kirim nama file gambar
+                harga: document.getElementById('harga').value
             };
 
             try {
+                // Menggunakan mode cors dengan text/plain untuk menghindari kendala pre-flight CORS di Apps Script
                 await fetch(WEB_APP_URL, {
                     method: 'POST',
                     headers: {
@@ -211,7 +176,7 @@
 
                 alert('Data berhasil disimpan ke Google Sheets!');
                 this.reset();
-                muatDataDariSheets(); // Refresh tabel
+                muatDataDariSheets(); // Refresh tabel setelah input
             } catch (error) {
                 console.error(error);
                 alert('Gagal menyimpan data ke cloud.');
@@ -221,7 +186,7 @@
             }
         });
 
-        // Panggil fungsi muat data
+        // Panggil fungsi muat data pertama kali halaman dibuka
         muatDataDariSheets();
     </script>
 </body>
