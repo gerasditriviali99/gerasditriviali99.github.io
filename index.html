@@ -4,97 +4,210 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Rekap Pembelian BBM SAPA - Cloud</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>window.jsPDF = window.jspdf.jsPDF;</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body class="bg-slate-100 font-sans p-4 md:p-8">
+<body class="bg-gradient-to-br from-slate-50 to-emerald-50 min-h-screen p-4 md:p-8 text-slate-800">
 
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div class="max-w-6xl mx-auto space-y-8">
         
-        <div class="bg-emerald-600 rounded-xl shadow-lg p-6 text-white text-center">
-            <h1 class="text-3xl font-bold tracking-wide">Rekap Pembelian BBM SAPA (Online)</h1>
-            <p class="text-emerald-100 mt-2">Data tersimpan otomatis dan terpusat di Google Sheets</p>
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-500 rounded-3xl shadow-xl shadow-emerald-500/20 p-8 text-white flex flex-col md:flex-row items-center justify-between gap-4 overflow-hidden relative">
+            <div class="absolute -right-10 -top-10 opacity-10">
+                <i class="ph-fill ph-gas-pump text-9xl"></i>
+            </div>
+            <div class="z-10 text-center md:text-left">
+                <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
+                    <i class="ph ph-gas-pump text-3xl"></i>
+                    <h1 class="text-3xl font-bold tracking-tight">Rekap BBM SAPA</h1>
+                </div>
+                <p class="text-emerald-50 text-sm md:text-base font-medium">Pencatatan Operasional Otomatis & Terpusat di Cloud</p>
+            </div>
+            <div class="z-10 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/30 flex items-center gap-2">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-100"></span>
+                </span>
+                <span class="text-sm font-semibold">Sistem Online</span>
+            </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow p-6">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Form Input Pembelian</h2>
-            <form id="formBBM" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Pembelian</label>
-                    <input type="date" id="tanggal" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1 flex flex-col gap-6">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 flex items-center gap-5 flex-grow">
+                    <div class="p-4 bg-emerald-100 rounded-2xl text-emerald-600"><i class="ph ph-money text-3xl"></i></div>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-500 mb-1">Total Pengeluaran</p>
+                        <h3 id="dashTotalBiaya" class="text-2xl font-bold text-slate-800 tracking-tight">Rp 0</h3>
+                    </div>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Nomor Polisi Kendaraan</label>
-                    <input type="text" id="nopol" placeholder="Misal: B 1234 ABC" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none uppercase">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 flex items-center gap-5 flex-grow">
+                    <div class="p-4 bg-blue-100 rounded-2xl text-blue-600"><i class="ph ph-drop text-3xl"></i></div>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-500 mb-1">Total Volume BBM</p>
+                        <h3 id="dashTotalLiter" class="text-2xl font-bold text-slate-800 tracking-tight">0 L</h3>
+                    </div>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Jenis BBM</label>
-                    <select id="jenisBBM" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
-                        <option value="" disabled selected>Pilih Jenis BBM</option>
-                        <option value="Pertalite">Pertalite</option>
-                        <option value="Pertamax">Pertamax</option>
-                        <option value="Biosolar">Biosolar</option>
-                        <option value="Dexlite">Dexlite</option>
-                        <option value="Pertamina Dex">Pertamina Dex</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Jumlah (Liter)</label>
-                    <input type="number" id="liter" step="0.01" placeholder="0.00" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Total Harga (Rp)</label>
-                    <input type="number" id="harga" placeholder="Misal: 150000" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none">
-                </div>
-
-                <div class="md:col-span-2 mt-2">
-                    <button type="submit" id="btnSimpan" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 disabled:bg-gray-400">
-                        Simpan Data ke Cloud
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div class="bg-white rounded-xl shadow p-6">
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 class="text-xl font-semibold text-gray-700">Daftar Rekapitulasi</h2>
-                <button onclick="muatDataDariSheets()" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 py-1 px-3 rounded font-medium">🔄 Refresh Data</button>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-600 text-sm">
-                            <th class="p-3 border-b">Tanggal</th>
-                            <th class="p-3 border-b">No. Polisi</th>
-                            <th class="p-3 border-b">Jenis BBM</th>
-                            <th class="p-3 border-b">Liter</th>
-                            <th class="p-3 border-b">Total Harga</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelBody" class="text-sm text-gray-700">
-                        <tr><td colspan="5" class="text-center p-4 text-gray-500">Sedang memuat data dari Google Sheets...</td></tr>
-                    </tbody>
-                    <tfoot>
-                        <tr class="bg-emerald-50 font-semibold text-gray-800">
-                            <td colspan="3" class="p-3 border-t text-right">Total Keseluruhan:</td>
-                            <td id="totalLiter" class="p-3 border-t">0 L</td>
-                            <td id="totalBiaya" class="p-3 border-t">Rp 0</td>
-                        </tr>
-                    </tfoot>
-                </table>
+            <div class="md:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <i class="ph-fill ph-chart-pie-slice text-emerald-600 mr-2 text-xl"></i> Komposisi Biaya per Jenis BBM
+                </h3>
+                <div class="h-56 w-full relative">
+                    <canvas id="bbmChart"></canvas>
+                </div>
             </div>
         </div>
 
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8 h-fit">
+                <div class="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
+                    <i class="ph ph-note-pencil text-xl text-emerald-600"></i>
+                    <h2 class="text-xl font-bold text-slate-800">Input Data</h2>
+                </div>
+
+                <form id="formBBM" class="space-y-5">
+                    <div>
+                        <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-600 mb-2">
+                            <i class="ph ph-calendar-blank text-slate-400"></i> Tanggal
+                        </label>
+                        <input type="date" id="tanggal" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200">
+                    </div>
+
+                    <div>
+                        <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-600 mb-2">
+                            <i class="ph ph-car-profile text-slate-400"></i> Nomor Polisi
+                        </label>
+                        <input type="text" id="nopol" placeholder="Contoh: B 1234 ABC" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none uppercase transition-all duration-200">
+                    </div>
+
+                    <div>
+                        <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-600 mb-2">
+                            <i class="ph ph-drop text-slate-400"></i> Jenis BBM
+                        </label>
+                        <select id="jenisBBM" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200">
+                            <option value="" disabled selected>Pilih Jenis BBM</option>
+                            <option value="Pertalite">Pertalite</option>
+                            <option value="Pertamax">Pertamax</option>
+                            <option value="Biosolar">Biosolar</option>
+                            <option value="Dexlite">Dexlite</option>
+                            <option value="Pertamina Dex">Pertamina Dex</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-600 mb-2">
+                            <i class="ph ph-flask text-slate-400"></i> Jumlah (Liter)
+                        </label>
+                        <input type="number" id="liter" step="0.01" placeholder="0.00" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200">
+                    </div>
+
+                    <div>
+                        <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-600 mb-2">
+                            <i class="ph ph-money text-slate-400"></i> Total Harga (Rp)
+                        </label>
+                        <input type="number" id="harga" placeholder="Contoh: 150000" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200">
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" id="btnSimpan" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-500/30 transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                            <i class="ph ph-cloud-arrow-up text-xl"></i>
+                            <span>Simpan ke Cloud</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8 flex flex-col h-full">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-table text-xl text-emerald-600"></i>
+                        <h2 class="text-xl font-bold text-slate-800">Daftar Rekapitulasi</h2>
+                    </div>
+                    <button onclick="muatDataDariSheets()" class="flex items-center gap-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-4 rounded-lg font-semibold transition-colors duration-200">
+                        <i class="ph ph-arrows-clockwise text-lg"></i> Refresh
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap gap-3 items-end bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-6">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 mb-1 block">Dari Tanggal</label>
+                        <input type="date" id="filterStart" class="bg-white border border-slate-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 mb-1 block">Sampai Tanggal</label>
+                        <input type="date" id="filterEnd" class="bg-white border border-slate-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="terapkanFilter()" class="bg-slate-700 hover:bg-slate-800 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">Terapkan</button>
+                        <button onclick="resetFilter()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-4 rounded-lg text-sm font-semibold transition-colors">Reset</button>
+                    </div>
+                    <div class="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
+                        <button onclick="downloadPDF()" class="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white py-2 px-5 rounded-lg text-sm font-bold shadow-lg shadow-rose-500/20 transform hover:-translate-y-0.5 transition-all duration-200">
+                            <i class="ph ph-file-pdf text-lg"></i> Unduh PDF
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-grow flex flex-col justify-between">
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="text-slate-500 text-xs uppercase tracking-wider border-b-2 border-slate-100">
+                                    <th class="p-4 font-semibold rounded-tl-xl">Tanggal</th>
+                                    <th class="p-4 font-semibold">No. Polisi</th>
+                                    <th class="p-4 font-semibold">Jenis BBM</th>
+                                    <th class="p-4 font-semibold text-right">Liter</th>
+                                    <th class="p-4 font-semibold text-right rounded-tr-xl">Total Harga</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelBody" class="text-sm font-medium text-slate-700">
+                                </tbody>
+                            <tfoot>
+                                <tr class="bg-slate-50 border-t-2 border-slate-200 text-slate-800 font-bold">
+                                    <td colspan="4" class="p-4 text-right">TOTAL KESELURUHAN:</td>
+                                    <td id="totalBiayaBawah" class="p-4 text-right text-emerald-700 text-base">Rp 0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div id="paginationControls" class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 border-t border-slate-100 rounded-b-xl mt-2">
+                        </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <script>
-        // GANTI DENGAN URL WEB APP YANG ANDA DAPATKAN DARI GOOGLE APPS SCRIPT
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxIt68AXe6tY6jro2qtUNtj9_5doJUfr6rvltzZfZQDBg3h8rVU3eZ5-onekT7nWDBDew/exec";
+
+        let allDataCache = []; 
+        let currentFilteredData = [];
+        
+        let currentPage = 1;
+        const rowsPerPage = 10; 
+        
+        let bbmChartInstance = null; // Variabel global untuk menyimpan grafik
 
         const formatRupiah = (angka) => {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
@@ -103,58 +216,339 @@
         const formatDate = (dateString) => {
             if(!dateString) return "-";
             const date = new Date(dateString);
-            if(isNaN(date.getTime())) return dateString; // Jika format bawaan string biasa
-            return date.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            if(isNaN(date.getTime())) return dateString; 
+            return date.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
         };
 
-        // Muat Data (GET) dari Google Sheets
+        const getBBMColor = (jenis) => {
+            const colors = {
+                'Pertalite': 'bg-green-100 text-green-700 border-green-200',
+                'Pertamax': 'bg-blue-100 text-blue-700 border-blue-200',
+                'Biosolar': 'bg-stone-100 text-stone-700 border-stone-200',
+                'Dexlite': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                'Pertamina Dex': 'bg-red-100 text-red-700 border-red-200'
+            };
+            return colors[jenis] || 'bg-slate-100 text-slate-700 border-slate-200';
+        };
+
         async function muatDataDariSheets() {
             const tbody = document.getElementById('tabelBody');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-gray-500">Menghubungkan ke cloud...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8"><div class="flex flex-col items-center justify-center text-slate-400 gap-2"><i class="ph ph-spinner-gap animate-spin text-3xl"></i><span>Menarik data dari cloud...</span></div></td></tr>';
 
             try {
                 const response = await fetch(WEB_APP_URL);
-                const dataBBM = await response.json();
+                allDataCache = await response.json();
+                allDataCache.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+                currentFilteredData = [...allDataCache];
                 
-                tbody.innerHTML = '';
-                let totalLiter = 0;
-                let totalBiaya = 0;
-
-                if (dataBBM.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-gray-500">Belum ada data di Google Sheets.</td></tr>';
-                } else {
-                    dataBBM.forEach((item) => {
-                        totalLiter += parseFloat(item.liter || 0);
-                        totalBiaya += parseFloat(item.harga || 0);
-
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-gray-50 transition border-b">
-                                <td class="p-3">${formatDate(item.tanggal)}</td>
-                                <td class="p-3 uppercase font-medium">${item.nopol}</td>
-                                <td class="p-3">${item.jenisBBM}</td>
-                                <td class="p-3">${parseFloat(item.liter).toFixed(2)} L</td>
-                                <td class="p-3">${formatRupiah(item.harga)}</td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                document.getElementById('totalLiter').innerText = totalLiter.toFixed(2) + ' L';
-                document.getElementById('totalBiaya').innerText = formatRupiah(totalBiaya);
+                currentPage = 1; 
+                renderTabel(currentFilteredData);
 
             } catch (error) {
                 console.error(error);
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-red-500">Gagal mengambil data. Pastikan URL Web App benar.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500 bg-red-50 rounded-xl"><div class="flex items-center justify-center gap-2"><i class="ph ph-warning-circle text-xl"></i> Gagal terhubung ke Google Sheets.</div></td></tr>';
             }
         }
 
-        // Kirim Data (POST) ke Google Sheets
+        // --- FUNGSI RENDER DASHBOARD GRAFIK ---
+        function renderDashboard(data) {
+            let totalBiaya = 0;
+            let totalLiter = 0;
+            const bbmData = {};
+
+            // Hitung agregasi data
+            data.forEach(item => {
+                const harga = parseFloat(item.harga || 0);
+                const liter = parseFloat(item.liter || 0);
+                totalBiaya += harga;
+                totalLiter += liter;
+
+                const jenis = item.jenisBBM || 'Lainnya';
+                if (!bbmData[jenis]) bbmData[jenis] = 0;
+                bbmData[jenis] += harga;
+            });
+
+            // Update Text Summary
+            document.getElementById('dashTotalBiaya').innerText = formatRupiah(totalBiaya);
+            document.getElementById('dashTotalLiter').innerText = totalLiter.toFixed(2) + ' L';
+
+            // Siapkan Data untuk Chart.js
+            const labels = Object.keys(bbmData);
+            const values = Object.values(bbmData);
+            
+            // Tentukan warna grafik sesuai jenis BBM
+            const bgColors = labels.map(jenis => {
+                if(jenis === 'Pertalite') return '#22c55e'; // Hijau
+                if(jenis === 'Pertamax') return '#3b82f6'; // Biru
+                if(jenis === 'Biosolar') return '#78716c'; // Abu-abu
+                if(jenis === 'Dexlite') return '#10b981'; // Emerald
+                if(jenis === 'Pertamina Dex') return '#ef4444'; // Merah
+                return '#cbd5e1'; // Default
+            });
+
+            const ctx = document.getElementById('bbmChart').getContext('2d');
+            
+            // Hapus grafik lama jika ada (agar tidak tertumpuk saat filter berubah)
+            if (bbmChartInstance) {
+                bbmChartInstance.destroy();
+            }
+
+            // Buat grafik baru
+            bbmChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: bgColors,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { 
+                            position: 'right',
+                            labels: {
+                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 12 },
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label + ': ' + formatRupiah(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- FUNGSI RENDER TABEL & PAGINATION ---
+        function renderTabel(data) {
+            const tbody = document.getElementById('tabelBody');
+            const paginationDiv = document.getElementById('paginationControls');
+            tbody.innerHTML = '';
+            let totalBiaya = 0;
+
+            // Render grafik Dashboard setiap kali tabel dirender
+            renderDashboard(data);
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-500 font-medium bg-slate-50/50 rounded-xl">Data tidak ditemukan.</td></tr>';
+                document.getElementById('totalBiayaBawah').innerText = formatRupiah(0);
+                paginationDiv.innerHTML = ''; 
+                return;
+            }
+
+            data.forEach((item) => {
+                totalBiaya += parseFloat(item.harga || 0);
+            });
+            document.getElementById('totalBiayaBawah').innerText = formatRupiah(totalBiaya);
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const paginatedData = data.slice(startIndex, endIndex);
+
+            paginatedData.forEach((item) => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/80 transition-colors duration-150 border-b border-slate-50 group">
+                        <td class="p-4 text-slate-600">${formatDate(item.tanggal)}</td>
+                        <td class="p-4 font-bold text-slate-800 tracking-wide">${item.nopol}</td>
+                        <td class="p-4">
+                            <span class="px-3 py-1 text-xs font-bold rounded-full border ${getBBMColor(item.jenisBBM)}">
+                                ${item.jenisBBM}
+                            </span>
+                        </td>
+                        <td class="p-4 text-slate-600 text-right">${parseFloat(item.liter).toFixed(2)} <span class="text-xs text-slate-400">L</span></td>
+                        <td class="p-4 font-semibold text-slate-800 text-right">${formatRupiah(item.harga)}</td>
+                    </tr>
+                `;
+            });
+
+            renderPagination(data.length);
+        }
+
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / rowsPerPage);
+            const paginationDiv = document.getElementById('paginationControls');
+            
+            const startItem = ((currentPage - 1) * rowsPerPage) + 1;
+            const endItem = Math.min(currentPage * rowsPerPage, totalItems);
+
+            let html = `
+                <div class="text-sm text-slate-500 font-medium text-center sm:text-left w-full sm:w-auto">
+                    Menampilkan <span class="font-bold text-slate-700">${startItem}</span> - 
+                    <span class="font-bold text-slate-700">${endItem}</span> dari 
+                    <span class="font-bold text-slate-700">${totalItems}</span> data
+                </div>
+                <div class="flex gap-1 justify-center w-full sm:w-auto">
+            `;
+
+            const prevDisabled = currentPage === 1;
+            html += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1.5 rounded-lg border flex items-center justify-center ${prevDisabled ? 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50' : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50 bg-white transition-colors'}" ${prevDisabled ? 'disabled' : ''}><i class="ph ph-caret-left"></i></button>`;
+
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `<button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold shadow-sm">${i}</button>`;
+                } else {
+                    html += `<button onclick="changePage(${i})" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">${i}</button>`;
+                }
+            }
+
+            const nextDisabled = currentPage === totalPages;
+            html += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1.5 rounded-lg border flex items-center justify-center ${nextDisabled ? 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50' : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50 bg-white transition-colors'}" ${nextDisabled ? 'disabled' : ''}><i class="ph ph-caret-right"></i></button>`;
+            
+            html += `</div>`;
+            paginationDiv.innerHTML = html;
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(currentFilteredData.length / rowsPerPage);
+            if (page < 1 || page > totalPages) return; 
+            
+            currentPage = page;
+            renderTabel(currentFilteredData);
+        }
+
+        // --- FILTER DATA ---
+        function terapkanFilter() {
+            const start = document.getElementById('filterStart').value;
+            const end = document.getElementById('filterEnd').value;
+
+            if(!start && !end) return;
+
+            currentFilteredData = allDataCache.filter(item => {
+                const itemDate = new Date(item.tanggal);
+                itemDate.setHours(0,0,0,0);
+                
+                let isAfterStart = true;
+                let isBeforeEnd = true;
+
+                if(start) {
+                    const startDate = new Date(start);
+                    startDate.setHours(0,0,0,0);
+                    isAfterStart = itemDate >= startDate;
+                }
+                if(end) {
+                    const endDate = new Date(end);
+                    endDate.setHours(0,0,0,0);
+                    isBeforeEnd = itemDate <= endDate;
+                }
+
+                return isAfterStart && isBeforeEnd;
+            });
+
+            currentPage = 1; 
+            renderTabel(currentFilteredData);
+        }
+
+        function resetFilter() {
+            document.getElementById('filterStart').value = '';
+            document.getElementById('filterEnd').value = '';
+            currentFilteredData = [...allDataCache];
+            currentPage = 1; 
+            renderTabel(currentFilteredData);
+        }
+
+        // --- DOWNLOAD PDF ---
+        function downloadPDF() {
+            if(currentFilteredData.length === 0) {
+                alert("Tidak ada data untuk diunduh!");
+                return;
+            }
+
+            try {
+                const doc = new jsPDF('p', 'mm', 'a4');
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text("FORM REKAP PEMBELIAN BBM SAPA", 14, 20); 
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                const start = document.getElementById('filterStart').value;
+                const end = document.getElementById('filterEnd').value;
+                let periode = "Semua Waktu";
+                if(start && end) periode = `${formatDate(start)} s/d ${formatDate(end)}`;
+                else if(start) periode = `Mulai ${formatDate(start)}`;
+                else if(end) periode = `Hingga ${formatDate(end)}`;
+                doc.text(`Periode: ${periode}`, 14, 27);
+
+                const tableColumn = ["Tanggal", "No. Polisi", "Jenis BBM", "Liter", "Total Harga"];
+                const tableRows = [];
+                let totalHargaPDF = 0;
+
+                currentFilteredData.forEach(item => {
+                    const ltr = parseFloat(item.liter || 0);
+                    const hrg = parseFloat(item.harga || 0);
+                    totalHargaPDF += hrg;
+
+                    tableRows.push([
+                        formatDate(item.tanggal),
+                        item.nopol.toUpperCase(),
+                        item.jenisBBM,
+                        ltr.toFixed(2),
+                        formatRupiah(hrg)
+                    ]);
+                });
+
+                doc.autoTable({
+                    startY: 32,
+                    head: [tableColumn],
+                    body: tableRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+                    styles: { fontSize: 9, cellPadding: 3 },
+                    columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' } },
+                    foot: [[ { content: 'TOTAL KESELURUHAN', colSpan: 4, styles: { halign: 'right' } }, formatRupiah(totalHargaPDF) ]],
+                    footStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' }
+                });
+
+                let finalY = doc.lastAutoTable.finalY + 25; 
+                if (finalY > 250) {
+                    doc.addPage();
+                    finalY = 30;
+                }
+
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.text("Dibuat oleh,", 40, finalY, { align: "center" });
+                doc.text("Mengetahui,", 105, finalY, { align: "center" });
+                doc.text("Menyetujui,", 170, finalY, { align: "center" });
+                finalY += 25;
+                doc.setFont("helvetica", "bold");
+                doc.text("( PEJABAT TOKO )", 40, finalY, { align: "center" });
+                doc.text("( AC )", 105, finalY, { align: "center" });
+                doc.text("( AM )", 170, finalY, { align: "center" });
+
+                doc.save(`Rekap_BBM_SAPA_${new Date().getTime()}.pdf`);
+                
+            } catch (error) {
+                console.error("Gagal membuat PDF:", error);
+                alert("Terjadi kesalahan saat membuat PDF.");
+            }
+        }
+
+        // --- SUBMIT DATA BARU ---
         document.getElementById('formBBM').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const btnSimpan = document.getElementById('btnSimpan');
+            const originalBtnContent = btnSimpan.innerHTML;
             btnSimpan.disabled = true;
-            btnSimpan.innerText = "Menyimpan ke Cloud...";
+            btnSimpan.innerHTML = '<i class="ph ph-spinner-gap animate-spin text-xl"></i><span>Menyimpan...</span>';
 
             const newData = {
                 tanggal: document.getElementById('tanggal').value,
@@ -165,28 +559,30 @@
             };
 
             try {
-                // Menggunakan mode cors dengan text/plain untuk menghindari kendala pre-flight CORS di Apps Script
                 await fetch(WEB_APP_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
-                    },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(newData)
                 });
 
-                alert('Data berhasil disimpan ke Google Sheets!');
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-0 transition-all duration-300 z-50';
+                toast.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-400 text-xl"></i> Data berhasil disimpan!';
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => toast.remove(), 300); }, 3000);
+
                 this.reset();
-                muatDataDariSheets(); // Refresh tabel setelah input
+                muatDataDariSheets(); 
             } catch (error) {
                 console.error(error);
                 alert('Gagal menyimpan data ke cloud.');
             } finally {
                 btnSimpan.disabled = false;
-                btnSimpan.innerText = "Simpan Data ke Cloud";
+                btnSimpan.innerHTML = originalBtnContent;
             }
         });
 
-        // Panggil fungsi muat data pertama kali halaman dibuka
+        // Load data saat halaman pertama kali dibuka
         muatDataDariSheets();
     </script>
 </body>
